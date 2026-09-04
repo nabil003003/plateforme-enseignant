@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  output: "standalone",
+  output: process.env.DOCKER_BUILD === "1" ? "standalone" : undefined,
   async headers() {
     return [
       {
