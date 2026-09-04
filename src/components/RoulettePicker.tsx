@@ -29,7 +29,7 @@ export function RoulettePicker({
   const [students] = useState<StudentItem[]>(initialStudents);
   const [round, setRound] = useState<RoundDetail>(initialRound);
   const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(
-    () => new Set(initialRound.selections.map((s) => s.student.id))
+    () => new Set((initialRound?.selections || []).map((s) => s.student?.id || s.studentId).filter(Boolean))
   );
 
   const [isSpinning, setIsSpinning] = useState(false);
@@ -140,8 +140,23 @@ export function RoulettePicker({
         throw new Error(data.error || t.drawErrorMessage);
       }
 
-      const winner: StudentItem = data.selection.student;
-      const updatedRound: RoundDetail = data.round;
+      const winner: StudentItem = data.selection?.student || data.selectedStudent;
+      if (!winner) {
+        throw new Error(data.error || t.drawErrorMessage);
+      }
+      const updatedRound: RoundDetail = data.round || {
+        ...round,
+        selections: [
+          ...(round?.selections || []),
+          {
+            id: data.selection?.id || String(Date.now()),
+            studentId: winner.id,
+            selectionOrder: data.selectionOrder || ((round?.selections?.length || 0) + 1),
+            selectedAt: new Date().toISOString(),
+            student: winner,
+          },
+        ],
+      };
 
       // 2. Compute dynamic spin duration
       const totalSteps = animationSpeed === "fast" ? 18 : animationSpeed === "slow" ? 40 : 28;
@@ -541,7 +556,7 @@ export function RoulettePicker({
                     key={sel.id}
                     className="py-1.5 flex items-center justify-between text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40 px-1 rounded"
                   >
-                    <span className="font-semibold" dir="auto">{sel.student.name}</span>
+                    <span className="font-semibold" dir="auto">{sel.student?.name || t.standbyLabel}</span>
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
                       #{sel.selectionOrder}
                     </span>

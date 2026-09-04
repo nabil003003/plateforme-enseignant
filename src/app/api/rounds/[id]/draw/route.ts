@@ -70,30 +70,48 @@ export async function POST(
 
       const nextOrder = round.selections.length + 1;
 
-      // 5. Create Selection record
-      await tx.selection.create({
+      // 5. Create Selection record with student data
+      const selection = await tx.selection.create({
         data: {
           roundId: round.id,
           studentId: chosenStudent.id,
           selectionOrder: nextOrder,
         },
+        include: {
+          student: true,
+        },
       });
 
       const isNowComplete = remainingStudents.length === 1;
 
-      if (isNowComplete) {
-        await tx.round.update({
-          where: { id: round.id },
-          data: { status: "COMPLETED", completedAt: new Date() },
-        });
-      }
+      await tx.round.update({
+        where: { id: round.id },
+        data: {
+          status: isNowComplete ? "COMPLETED" : "ACTIVE",
+          completedAt: isNowComplete ? new Date() : null,
+        },
+      });
+
+      const updatedRound = await tx.round.findUnique({
+        where: { id: round.id },
+        include: {
+          selections: {
+            include: {
+              student: { select: { id: true, name: true } },
+            },
+            orderBy: { selectionOrder: "asc" },
+          },
+        },
+      });
 
       return {
         success: true,
+        selection,
         selectedStudent: {
           id: chosenStudent.id,
           name: chosenStudent.name,
         },
+        round: updatedRound,
         selectionOrder: nextOrder,
         roundStatus: isNowComplete ? "COMPLETED" : "ACTIVE",
         totalStudents: allStudents.length,

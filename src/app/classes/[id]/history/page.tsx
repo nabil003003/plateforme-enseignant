@@ -184,7 +184,7 @@ export default function HistoryPage({ params }: { params: { id: string } }) {
                                     #{selection.selectionOrder}
                                   </td>
                                   <td className={`py-2 px-3 font-bold text-slate-900 dark:text-white ${lang === "fr" ? "text-left" : "text-right"}`} dir="auto">
-                                    {selection.student.name}
+                                    {selection.student?.name || "-"}
                                   </td>
                                   <td className={`py-2 px-3 text-slate-400 ${lang === "fr" ? "text-right" : "text-left"}`} dir="ltr">
                                     {new Date(selection.selectedAt).toLocaleTimeString(lang === "fr" ? "fr-FR" : "ar-EG", {
