@@ -556,7 +556,7 @@ export function RoulettePicker({
                     key={sel.id}
                     className="py-1.5 flex items-center justify-between text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40 px-1 rounded"
                   >
-                    <span className="font-semibold" dir="auto">{sel.student?.name || t.standbyLabel}</span>
+                    <span className="font-semibold" dir="auto">{sel.student?.name || "-"}</span>
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
                       #{sel.selectionOrder}
                     </span>
