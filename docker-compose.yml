@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: teacher_academic_portal
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/prisma/dev.db
+      - JWT_SECRET=change-this-to-a-very-secure-random-key-in-production
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+    volumes:
+      - app_db_data:/app/prisma
+
+volumes:
+  app_db_data:

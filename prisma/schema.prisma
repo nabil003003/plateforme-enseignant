@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String               @id @default(uuid())
+  name                String
+  email               String               @unique
+  passwordHash        String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  classes             Class[]
+  settings            UserSettings?
+}
+
+model UserSettings {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme          String   @default("system")
+  soundEnabled   Boolean  @default(true)
+  animationSpeed String   @default("normal")
+  locale         String   @default("ar")
+  updatedAt      DateTime @updatedAt
+}
+
+model Class {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  students    Student[]
+  rounds      Round[]
+
+  @@index([userId])
+}
+
+model Student {
+  id         String      @id @default(uuid())
+  classId    String
+  class      Class       @relation(fields: [classId], references: [id], onDelete: Cascade)
+  name       String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  selections Selection[]
+
+  @@index([classId])
+}
+
+model Round {
+  id          String      @id @default(uuid())
+  classId     String
+  class       Class       @relation(fields: [classId], references: [id], onDelete: Cascade)
+  roundNumber Int         @default(1)
+  status      String      @default("ACTIVE") // ACTIVE, COMPLETED
+  startedAt   DateTime    @default(now())
+  completedAt DateTime?
+  selections  Selection[]
+
+  @@index([classId])
+}
+
+model Selection {
+  id             String   @id @default(uuid())
+  roundId        String
+  round          Round    @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  selectionOrder Int
+  selectedAt     DateTime @default(now())
+
+  @@unique([roundId, studentId])
+  @@index([roundId])
+  @@index([studentId])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
